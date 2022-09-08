@@ -12,7 +12,7 @@ LIBREQOSUSER='root'
 LIBREQOSDIR='~/LibreQoS/v1.2/'
 
 #Generate LibreQoS ShapeDevices.csv file
-${LMSPATH}/bin/lms-makelibreqosconf.php
+${LMSPATH}/plugins/LMSLibreQoS/lms-makelibreqosconf.php
 
 #Send config files to LibreQoS
 scp -P${LIBRESSHPORT} "${QOSFILE}" ${LIBREQOSUSER}@${LIBREQOSHOST}:"${LIBREQOSDIR}"
