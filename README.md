@@ -3,7 +3,8 @@
 # Skrypt integracyjny generuje pliki kolejek dla LibreQoS i wrzuca je na LibreQoS, 
 # Generowanie konfigów napisane jest na bazie skryptu LMS
 
-# Na tą chwilę skrypt wrzuca jedynie pełny konfig
+Na tę chwilę skrypt jedynie:
+- wrzuca jedynie pełny konfig,
 
 ## instalacja
 cd /var/www/html/lms/
