@@ -8,8 +8,9 @@ cd /var/www/html/lms/
 git clone https://github.com/interduo/LMSLibreQoS/ plugins/LibreQoS
 
 ## Edytujemy zmienne w pliku make-and-send-libreqosconf.sh
-LMSPATH - ścieżka LMS
+LMSPATH - ścieżka LMS,
 QOSFILE - plik z wygenerowanym plikiem kolejek
+
 
 LIBREQOSHOST - nazwa hosta LibreQoS,
 LIBRESSHPORT - port SSH LibreQoS,
