@@ -4,6 +4,7 @@
 # Generowanie konfigów napisane jest na bazie skryptu LMS
 
 Na tę chwilę skrypt jedynie:
+- generuje konfig dla LibreQoS,
 - wrzuca jedynie pełny konfig,
 
 ## instalacja
