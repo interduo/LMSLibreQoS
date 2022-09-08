@@ -4,15 +4,18 @@
 # Generowanie konfigów napisane na bazie skryptu LMS lms-maketcnew.php
 
 LMSPATH='/var/www/html/lms'
-QOSFILE='/etc/router/libreqos/ShapedDevices.csv'
+QOSFILE="${LMSDIR}/plugins/LMSLibreQoS/ShapedDevices.csv"
 
 LIBRESSHPORT=22
-LIBREQOSHOST='libreqos'
+LIBREQOSHOST='libreqoshost'
 LIBREQOSUSER='root'
 LIBREQOSDIR='~/LibreQoS/v1.2/'
 
-#generate LibreQoS ShapeDevices.csv file
+#Generate LibreQoS ShapeDevices.csv file
 ${LMSPATH}/bin/lms-makelibreqosconf.php
 
-#send config files to LibreQoS
-scp -P${LIBRESSHPORT} "${QOSFILE}" $LIBREQOSUSER}@${LIBREQOSHOST}:"${LIBREQOSDIR}"
+#Send config files to LibreQoS
+scp -P${LIBRESSHPORT} "${QOSFILE}" ${LIBREQOSUSER}@${LIBREQOSHOST}:"${LIBREQOSDIR}"
+
+#Spell a magic command in LibreQoS
+ssh -p${LIBRESSHPORT} ${LIBREQOSUSER}@${LIBREQOSHOST} ${LIBREQOSMAGICCOMMAND}
