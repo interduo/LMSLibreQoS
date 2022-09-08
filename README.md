@@ -9,7 +9,7 @@ Na tę chwilę skrypt jedynie:
 
 ## instalacja
 cd /var/www/html/lms/
-git clone https://github.com/interduo/LMSLibreQoS/ plugins/LibreQoS
+git clone https://github.com/interduo/LMSLibreQoS/ plugins/LMSLibreQoS
 
 ## Edytujemy zmienne w pliku make-and-send-libreqosconf.sh
 - LMSPATH - ścieżka LMS,
@@ -26,7 +26,7 @@ ssh-copy-id uzytkownik@libreqoshost
 
 [libreqos]
 
-script_file = /etc/router/libreqos/ShapedDevices.csv
+script_file = /var/www/html/lms/plugins/LMSLibreQoS/ShapedDevices.csv
 
 script_file_day = /tmp/removemesomeday_1
 
