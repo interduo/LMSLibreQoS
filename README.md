@@ -3,7 +3,21 @@
 # Skrypt integracyjny generuje pliki kolejek dla LibreQoS i wrzuca je na LibreQoS, 
 # Generowanie konfigów napisane jest na bazie skryptu LMS
 
-Przykład sekcji konfiga dla generatora konfigów libreQoS z LMS:
+## instalacja
+cd /var/www/html/lms/
+git clone https://github.com/interduo/LMSLibreQoS/ plugins/LibreQoS
+
+## Edytujemy zmienne w pliku make-and-send-libreqosconf.sh
+LMSPATH - ścieżka LMS
+QOSFILE - plik z wygenerowanym plikiem kolejek
+
+LIBREQOSHOST - nazwa hosta LibreQoS,
+LIBRESSHPORT - port SSH LibreQoS,
+LIBREQOSUSER - użytkownik SSH LibreQoS,
+LIBREQOSDIR - ścieżka do skryptów LibreQoS,
+
+
+## Tworzymy sekcję konfiguracyjną libreqos w http://lms/?m=configlist lub lms.ini
 
 [libreqos]
 script_file = /etc/router/libreqos/ShapedDevices.csv
