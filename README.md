@@ -17,6 +17,8 @@ git clone https://github.com/interduo/LMSLibreQoS/ plugins/LibreQoS
 - LIBREQOSUSER - użytkownik SSH LibreQoS,
 - LIBREQOSDIR - ścieżka do skryptów LibreQoS,
 
+## Kopiujemy klucz publiczny SSH z użytkownika LMS na LibreQoS
+ssh-copy-id uzytkownik@libreqoshost
 
 ## Tworzymy sekcję konfiguracyjną libreqos w http://lms/?m=configlist lub lms.ini
 
