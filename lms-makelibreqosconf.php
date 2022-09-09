@@ -76,7 +76,7 @@ foreach (array_flip(array_filter($long_to_shorts, function ($value) {
 
 if (array_key_exists('version', $options)) {
     print <<<EOF
-lms-makelibreqosconf.php
+lms-makelibreqos.php
 (C) 2001-2020 LMS Developers
 
 EOF;
@@ -85,7 +85,7 @@ EOF;
 
 if (array_key_exists('help', $options)) {
     print <<<EOF
-lms-makelibreqosconf.php
+lms-makelibreqos.php
 (C) 2001-2020 LMS Developers
 
 -C, --config-file=/etc/lms/lms.ini      alternate config file (default: /etc/lms/lms.ini);
@@ -101,8 +101,8 @@ EOF;
 $quiet = array_key_exists('quiet', $options);
 if (!$quiet) {
     print <<<EOF
-lms-makelibreqosconf.php
-(C) 2001-2022 LMS Developers
+lms-makelibreqos.php
+(C) 2001-2020 LMS Developers
 
 EOF;
 }
@@ -184,7 +184,9 @@ $script_plimit = ConfigHelper::getConfig('libreqos.plimit', '', true);
 $script_multi_mac = ConfigHelper::checkConfig('libreqos.multi_mac');
 $create_device_channels = ConfigHelper::checkConfig('libreqos.create_device_channels');
 $all_assignments = ConfigHelper::checkConfig('libreqos.all_assignments');
-$ignore_assignment_suspensions = ConfigHelper::getConfig('libreqos.ignore_assignment_suspensions', false);
+$ignore_assignment_suspensions = ConfigHelper::checkConfig('libreqos.ignore_assignment_suspensions');
+$assignment_per_node = ConfigHelper::getConfig('libreqos.one_assignment_per_node_allowed', false);
+$mbit_rates = ConfigHelper::getConfig('libreqos.generate_mbit_rates', false);
 
 $host = isset($options['host']) ? mb_strtoupper($options['host']) : null;
 
@@ -246,7 +248,7 @@ $query .= "SELECT ROUND(t.downrate * a.count) AS downrate,
 	ROUND(t.climit * a.count) AS climit,
 	ROUND(t.plimit * a.count) AS plimit,
 	n.id, n.ownerid, n.name, n.netid, INET_NTOA(n.ipaddr) AS ip, n.mac,
-	na.assignmentid AS assignmentid, a.customerid,
+	na.assignmentid, a.customerid,
 	TRIM(" . $DB->Concat('c.lastname', "' '", 'c.name') . ") AS customer
 	FROM nodeassignments na
 	JOIN assignments a ON (na.assignmentid = a.id)
@@ -255,21 +257,16 @@ $query .= "SELECT ROUND(t.downrate * a.count) AS downrate,
         : "LEFT JOIN (
 		SELECT customerid, COUNT(id) AS allsuspended FROM assignments
 		WHERE tariffid IS NULL AND liabilityid IS NULL
-			AND datefrom <= ?NOW?
-			AND (dateto = 0 OR dateto >= ?NOW?)
+			AND datefrom <= ?NOW? AND (dateto = 0 OR dateto > ?NOW?)
 		GROUP BY customerid
 	) s ON s.customerid = a.customerid") . "
 	JOIN tariffs t ON (a.tariffid = t.id)
 	JOIN vnodes n ON (na.nodeid = n.id)
 	JOIN customers c ON (a.customerid = c.id)
-	WHERE "
-        . ($ignore_assignment_suspensions ? '' : "s.allsuspended IS NULL AND a.suspended = 0 AND ")
-        . "a.commited = 1
-		AND a.datefrom <= ?NOW?
-		AND (a.dateto >= ?NOW? OR a.dateto = 0 OR a.dateto IS NULL)
+	WHERE " . ($ignore_assignment_suspensions ? '' : "s.allsuspended IS NULL AND a.suspended = 0 AND ") . "a.commited = 1
+		AND a.datefrom <= ?NOW? AND (a.dateto >= ?NOW? OR a.dateto = 0)
 		AND n.access = 1
 		AND (t.downrate > 0 OR t.downceil > 0 OR t.uprate > 0 OR t.upceil > 0)
-		AND (t.downrate IS NOT NULL OR t.downceil IS NOT NULL OR t.uprate IS NOT NULL OR t.upceil IS NOT NULL 0)
 		AND n.netid IN (" . implode(',', array_keys($networks)) . ")"
         . (empty($customerids) ? '' : " AND c.id IN (" . implode(',', $customerids) . ")");
 
@@ -288,15 +285,13 @@ if ($all_assignments) {
 		n.id, n.ownerid, n.name, n.netid, INET_NTOA(n.ipaddr) AS ip, n.mac,
 		a.id AS assignmentid, a.customerid,
 		TRIM(" . $DB->Concat('lastname', "' '", 'c.name') . ") AS customer
-	FROM assignments a"
-        . ($ignore_assignment_suspensions ? ''
+	FROM assignments a
+	" . ($ignore_assignment_suspensions
+        ? ''
         : "LEFT JOIN (
 		SELECT customerid, COUNT(id) AS allsuspended FROM assignments
-		WHERE
-            tariffid IS NULL
-            AND liabilityid IS NULL
-            AND datefrom <= ?NOW? 
-            AND (dateto = 0 OR dateto >= ?NOW?)
+		WHERE tariffid IS NULL AND liabilityid IS NULL
+			AND datefrom <= ?NOW? AND (dateto = 0 OR dateto > ?NOW?)
 		GROUP BY customerid
 	) s ON s.customerid = a.customerid") . "
 	JOIN tariffs t ON t.id = a.tariffid
@@ -309,16 +304,13 @@ if ($all_assignments) {
 		WHERE (vn.ownerid > 0 AND nd.id IS NULL)
 			OR (vn.ownerid IS NULL AND nd.id IS NOT NULL)
 	) n ON n.ownerid = c.id
-	WHERE "
-        . ($ignore_assignment_suspensions ? '' : "s.allsuspended IS NULL AND a.suspended = 0 AND ")
-        . "a.commited = 1
+	WHERE " . ($ignore_assignment_suspensions ? '' : "s.allsuspended IS NULL AND a.suspended = 0 AND ") . "a.commited = 1
 		AND n.id NOT IN (SELECT DISTINCT nodeid FROM nodeassignments)
 		AND a.id NOT IN (SELECT DISTINCT assignmentid FROM nodeassignments)
 		AND a.datefrom <= ?NOW?
-		AND (a.dateto >= ?NOW? OR a.dateto = 0 OR a.dateto IS NULL)
+		AND (a.dateto >= ?NOW? OR a.dateto = 0)
 		AND n.access = 1
 		AND (t.downrate > 0 OR t.downceil > 0 OR t.uprate > 0 OR t.upceil > 0)
-		AND (t.downrate IS NOT NULL OR t.downceil IS NOT NULL OR t.uprate IS NOT NULL OR t.upceil IS NOT NULL)
 		AND n.netid IN (" . implode(',', array_keys($networks)) . ")"
         . (empty($customerids) ? '' : " AND c.id IN (" . implode(',', $customerids) . ")") . "
 	) ORDER BY customerid, assignmentid";
@@ -350,10 +342,9 @@ foreach ($nodes as $node) {
         }
     }
 
-    list ($assignmentid, $uprate, $downrate, $upceil, $downceil, $uprate_n, $downrate_n,
-        $upceil_n, $downceil_n, $climit, $plimit, $nodeid, $nodeip) =
+    list ($uprate, $downrate, $upceil, $downceil, $uprate_n, $downrate_n, $upceil_n, $downceil_n,
+        $climit, $plimit, $nodeid, $nodeip, $assignmentid) =
         array(
-            $assignmentid,
             $node['uprate'],
             $node['downrate'],
             $node['upceil'],
@@ -366,6 +357,7 @@ foreach ($nodes as $node) {
             $node['plimit'],
             $node['id'],
             $node['ip'],
+            $node['assignmentid']
         );
 
     if (!$channelfound) { // channel (assignment) not found
@@ -403,49 +395,44 @@ foreach ($nodes as $node) {
                 }
             }
 
-            // sprawdź czy komputer posiada jedynie przypisane jedno zobowiązanie
-            $assignment_per_node = ConfigHelper::getConfig('libreqos.assignment_per_node', false);
-
-            if ($assignment_per_node && $channelfound) {
-                foreach ($sub as $aid) {
-                    print 'AssignmentID:' . $aid . "\n";
-                };
-                print("ERROR: Node " . $chnode['id'] . " has more than one internet assignments classified for QoS \n");
-                exit(1);
-            } else {
-                // zobowiazanie nie znalezione, zwiekszamy kanal
-                if (!$subfound) {
-                    $channels[$j]['uprate'] += $uprate;
-                    $channels[$j]['upceil'] += $upceil;
-                    $channels[$j]['downrate'] += $downrate;
-                    $channels[$j]['downceil'] += $downceil;
-                    $channels[$j]['uprate_n'] += $uprate_n;
-                    $channels[$j]['upceil_n'] += $upceil_n;
-                    $channels[$j]['downrate_n'] += $downrate_n;
-                    $channels[$j]['downceil_n'] += $downceil_n;
-                    $channels[$j]['climit'] += $climit;
-                    $channels[$j]['plimit'] += $plimit;
-
-                    $channels[$j]['subs'][] = $assignmentid;
+            // zobowiazanie nie znalezione, wyrzucamy błąd lub zwiekszamy kanal
+            // zachowanie sterowane zmienną libreqos.one_assignment_per_node_allowed
+            if (!$subfound) {
+                $channels[$j]['subs'][] = $assignmentid;
+                switch ($assignment_per_node) {
+                    case false:
+                        $channels[$j]['uprate'] += $uprate;
+                        $channels[$j]['upceil'] += $upceil;
+                        $channels[$j]['downrate'] += $downrate;
+                        $channels[$j]['downceil'] += $downceil;
+                        $channels[$j]['uprate_n'] += $uprate_n;
+                        $channels[$j]['upceil_n'] += $upceil_n;
+                        $channels[$j]['downrate_n'] += $downrate_n;
+                        $channels[$j]['downceil_n'] += $downceil_n;
+                        $channels[$j]['climit'] += $climit;
+                        $channels[$j]['plimit'] += $plimit;
+                        break;
+                    case 'error':
+                        $exit1 = true;
+                        print('ERROR: ');
+                        // wyjdź i pokaż warning niżej
+                    case 'warning':
+                    default:
+                        print("Node has more than one internet assignments classified for QoS: NodeID: "
+                        . $chnode['id'] . ", AssignmentID:" . implode(',', $channels[$j]['subs']) . "\n");
+                        break;
+                }
+                if (!empty($exit1)) {
+                    exit(1);
                 }
             }
+
             continue;
         }
 
         // ...nie znaleziono komputera, tworzymy kanal
-        if (empty($downrate)
-            || empty($uprate)
-            || empty($downceil)
-            || empty($upceil)) {
-            print('ERROR: CustomerID:' . $node['ownerid']
-                . ' AssignmentID:' . $assignmentid
-                . ' got dlrate/uprate/dlceil/upceil equal 0 or not set'
-            );
-            exit(1);
-        }
         $channels[] = array(
             'id' => $assignmentid,
-            'assignmentid' => $assignmentid,
             'nodes' => array(),
             'subs' => array(),
             'cid' => $node['ownerid'],
@@ -459,7 +446,7 @@ foreach ($nodes as $node) {
             'downrate_n' => $downrate_n,
             'downceil_n' => $downceil_n,
             'climit' => $climit,
-            'plimit' => $plimit,
+            'plimit' => $plimit
         );
         $j = count($channels) - 1;
     }
@@ -473,6 +460,43 @@ foreach ($nodes as $node) {
     );
 }
 
+if ($create_device_channels) {
+    $devices = $DB->GetAll("SELECT n.id, INET_NTOA(n.ipaddr) AS ip, n.name, n.mac, n.netid
+		FROM vnodes n
+		JOIN netdevices nd ON nd.id = n.netdev AND n.ownerid IS NULL
+		WHERE nd.ownerid IS NULL
+			AND n.netid IN (" . implode(',', array_keys($networks)) . ")");
+
+    if (!empty($devices)) {
+        $channels[] = array(
+            'id' => '0',
+            'nodes' => array(),
+            'subs' => array(),
+            'cid' => '1',
+            'customer' => 'Devices',
+            'uprate' => '128',
+            'upceil' => '10000',
+            'downrate' => '128',
+            'downceil' => '10000',
+            'uprate_n' => '128',
+            'upceil_n' => '10000',
+            'downrate_n' => '128',
+            'downceil_n' => '10000',
+            'climit' => '0',
+            'plimit' => '0'
+        );
+        foreach ($devices as $device) {
+            $channels[count($channels) - 1]['nodes'][] = array(
+                'id' => $device['id'],
+                'network' => $device['netid'],
+                'ip' => $device['ip'],
+                'name' => $device['name'],
+                'mac' => $device['mac']
+            );
+        }
+    }
+}
+
 // open file
 $fh = fopen($script_file, "w");
 $fh_d = fopen($script_file_day, "w");
@@ -481,6 +505,7 @@ $fh_n = fopen($script_file_night, "w");
 if (empty($fh) || empty($fh_d) || empty($fh_n)) {
     die;
 }
+
 $uts = time();
 $date = date('Y-m-d H:i', $uts);
 
@@ -495,48 +520,77 @@ $x = XVALUE;
 $mark = XVALUE;
 
 // channels loop
-foreach ($channels as $channel) {
-    $c_up = $script_class_up;
+foreach ($channels as $key => $channel) {
     $c_down = $script_class_down;
-    $c_up_day = $script_class_up_day;
+    $c_up = $script_class_up;
+
     $c_down_day = $script_class_down_day;
-    $c_up_night = $script_class_up_night;
+    $c_up_day = $script_class_up_day;
+
     $c_down_night = $script_class_down_night;
+    $c_up_night = $script_class_up_night;
 
     // make rules...
-    $uprate = $channel['uprate'];
-    $upceil = (!$channel['upceil'] ? $uprate : $channel['upceil']);
     $downrate = $channel['downrate'];
     $downceil = (!$channel['downceil'] ? $downrate : $channel['downceil']);
-    $uprate_n = $channel['uprate_n'];
-    $upceil_n = (!$channel['upceil_n'] ? $uprate_n : $channel['upceil_n']);
+    $uprate = $channel['uprate'];
+    $upceil = (!$channel['upceil'] ? $uprate : $channel['upceil']);
+
     $downrate_n = $channel['downrate_n'];
     $downceil_n = (!$channel['downceil_n'] ? $downrate_n : $channel['downceil_n']);
+    $uprate_n = $channel['uprate_n'];
+    $upceil_n = (!$channel['upceil_n'] ? $uprate_n : $channel['upceil_n']);
+
+    if (!empty($mbit_rates)) {
+        $vars = array(
+            'downrate',
+            'downceil',
+            'uprate',
+            'upceil',
+            'downrate_n',
+            'downceil_n',
+            'uprate_n',
+            'upceil_n',
+        );
+	$min_rate = 1;
+	$min_ceil = 2;
+	foreach ($vars as $v) {
+            $v_rounded = round($$v/1024, '3');
+            if ($mbit_rates == 'integer') {
+                $v_rounded = intval($v_rounded);
+                ($$v != 0 && $v_rounded == 0) ? $v_rounded = 1 : null;
+	    }
+	    if ($v_rounded < $min_ceil && strpos($v, 'ceil')) {
+	    	$v_rounded = $min_ceil;
+	    }
+	    if ($v_rounded < $min_rate && strpos($v, 'rate')) {
+	    	$v_rounded = $min_rate;
+	    }
+            ${$v} = $v_rounded;
+        }
+    }
+
     $ips = implode(",", array_column($channel['nodes'], 'ip'));
 
     $from = array('\\n', '%cid', '%cname', '%h', '%class',
         '%uprate', '%upceil', '%downrate', '%downceil', '%date', '%uts', '%assignmentid', '%ips');
 
     $to = array("\n", $channel['cid'], $channel['customer'], sprintf("%x", $x), sprintf("%d", $x),
-        $uprate, $upceil, $downrate, $downceil, $date,
-        $uts, $channel['id'], $ips);
+        $uprate, $upceil, $downrate, $downceil, $date, $uts, $channel['id'], $ips);
     $c_up = str_replace($from, $to, $c_up);
     $c_up_day = str_replace($from, $to, $c_up_day);
 
     $to = array("\n", $channel['cid'], $channel['customer'], sprintf("%x", $x), sprintf("%d", $x),
-        $uprate_n, $upceil_n, $downrate_n, $downceil_n, $date,
-        $uts, $channel['id'], $ips);
+        $uprate_n, $upceil_n, $downrate_n, $downceil_n, $date, $uts, $channel['id'], $ips);
     $c_up_night = str_replace($from, $to, $c_up_night);
 
     $to = array("\n", $channel['cid'], $channel['customer'], sprintf("%x", $x), sprintf("%d", $x),
-        $uprate, $upceil, $downrate, $downceil, $date,
-        $uts, $channel['id'], $ips);
+        $uprate, $upceil, $downrate, $downceil, $date, $uts, $channel['id'], $ips);
     $c_down = str_replace($from, $to, $c_down);
     $c_down_day = str_replace($from, $to, $c_down_day);
 
     $to = array("\n", $channel['cid'], $channel['customer'], sprintf("%x", $x), sprintf("%d", $x),
-        $uprate_n, $upceil_n, $downrate_n, $downceil_n, $date,
-        $uts, $channel['id'], $ips);
+        $uprate_n, $upceil_n, $downrate_n, $downceil_n, $date, $uts, $channel['id'], $ips);
     $c_down_night = str_replace($from, $to, $c_down_night);
 
     // ... and write to file
