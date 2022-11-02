@@ -25,25 +25,16 @@ ssh-copy-id uzytkownik@libreqoshost
 ## Tworzymy sekcję konfiguracyjną libreqos w http://lms/?m=configlist lub lms.ini
 
 [libreqos]
-
 script_file = /var/www/html/lms/plugins/LMSLibreQoS/ShapedDevices.csv
-
 script_file_day = /tmp/removemesomeday_1
-
 script_file_night = /tmp/removemesomeday_2
-
 script_permission = -1
-
 all_assignments = true
-
 assignment_per_node = true
-
 ignore_assignment_suspensions = false
-
 #create_device_channels = true
-
 begin = '#LMS customer queues file for LibreQoS - %date\n'
-
 class_up = '%assignmentid, %cid, %h, %class, AP_A,,"%ips",, %downrate, %uprate, %downceil, %upceil, KOMENTARZ\n'
-
 end = '#END OF FILE'
+
+## uruchomienie skryptu make-and-send-libreqosconf.sh generuje plik ShapedDevices.csv i wrzuca go na LibreQoS.
