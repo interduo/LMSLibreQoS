@@ -8,8 +8,10 @@ Na tę chwilę skrypt jedynie:
 - wrzuca jedynie pełny konfig,
 
 ## instalacja
+```
 cd /var/www/html/lms/
 git clone https://github.com/interduo/LMSLibreQoS/ plugins/LMSLibreQoS
+```
 
 ## Edytujemy zmienne w pliku make-and-send-libreqosconf.sh
 - LMSPATH - ścieżka LMS,
@@ -20,10 +22,12 @@ git clone https://github.com/interduo/LMSLibreQoS/ plugins/LMSLibreQoS
 - LIBREQOSDIR - ścieżka do skryptów LibreQoS,
 
 ## Kopiujemy klucz publiczny SSH z użytkownika LMS na LibreQoS
+```
 ssh-copy-id uzytkownik@libreqoshost
+```
 
 ## Tworzymy sekcję konfiguracyjną libreqos w http://lms/?m=configlist lub lms.ini
-
+```
 [libreqos]
 script_file = /var/www/html/lms/plugins/LMSLibreQoS/ShapedDevices.csv
 script_file_day = /tmp/removemesomeday_1
@@ -34,7 +38,7 @@ assignment_per_node = true
 ignore_assignment_suspensions = false
 #create_device_channels = true
 begin = '#LMS customer queues file for LibreQoS - %date\n'
-class_up = '%assignmentid, %cid, %h, %class, AP_A,,"%ips",, %downrate, %uprate, %downceil, %upceil, KOMENTARZ\n'
+class_up = '%assignmentid, %cid, %h, %class,,,"%ips",, %downrate, %uprate, %downceil, %upceil, KOMENTARZ\n'
 end = '#END OF FILE'
-
+```
 ## uruchomienie skryptu make-and-send-libreqosconf.sh generuje plik ShapedDevices.csv i wrzuca go na LibreQoS.
