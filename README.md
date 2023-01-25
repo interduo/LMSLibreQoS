@@ -7,7 +7,7 @@ Na tę chwilę skrypt jedynie:
 - generuje konfig dla LibreQoS,
 - wrzuca jedynie pełny konfig,
 
-## instalacja
+## Instalacja
 ```
 cd /var/www/html/lms/
 git clone https://github.com/interduo/LMSLibreQoS/ plugins/LMSLibreQoS
@@ -41,4 +41,5 @@ begin = '#LMS customer queues file for LibreQoS - %date\n'
 class_up = '%assignmentid,%cid,%h,%class,,,"%ips",,%downrate,%uprate,%downceil,%upceil,"KOMENTARZ"\n'
 end = '#END OF FILE'
 ```
-## uruchomienie skryptu make-and-send-libreqosconf.sh generuje plik ShapedDevices.csv i wrzuca go na LibreQoS.
+
+Uruchomienie skryptu make-and-send-libreqosconf.sh generuje plik ShapedDevices.csv i wrzuca go na LibreQoS.
