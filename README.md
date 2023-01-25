@@ -36,5 +36,3 @@ begin = '#LMS customer queues file for LibreQoS - %date\n'
 class_up = '%assignmentid,%cid,%h,%class,,,"%ips",,%downrate,%uprate,%downceil,%upceil,"KOMENTARZ"\n'
 end = '#END OF FILE'
 ```
-
-Uruchomienie skryptu make-and-send-libreqosconf.sh generuje plik ShapedDevices.csv i wrzuca go na LibreQoS.
