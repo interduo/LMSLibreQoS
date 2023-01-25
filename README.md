@@ -1,11 +1,6 @@
 # Integracja LMS i LibreQoS >v1.2
-
-# Skrypt integracyjny generuje pliki kolejek dla LibreQoS i wrzuca je na LibreQoS, 
-# Generowanie konfigów napisane jest na bazie skryptu LMS
-
-Na tę chwilę skrypt jedynie:
-- generuje konfig dla LibreQoS,
-- wrzuca jedynie pełny konfig,
+Skrypt integracyjny generuje pliki kolejek dla LibreQoS i wrzuca je na LibreQoS, 
+Generowanie konfigów napisane jest na bazie skryptu LMS
 
 ## Instalacja
 ```
