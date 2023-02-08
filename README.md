@@ -1,4 +1,4 @@
-# Integracja LMS i LibreQoS >v1.2
+# Integracja LMS i LibreQoS v1.4
 Skrypt integracyjny generuje pliki kolejek dla LibreQoS i wrzuca je na LibreQoS, 
 Generowanie konfigów napisane jest na bazie skryptu LMS
 
@@ -34,7 +34,7 @@ ignore_assignment_suspensions = false
 #create_device_channels = true
 begin = '#LMS customer queues file for LibreQoS - %date\n'
 class_up = '%assignmentid,%cid,%h,%class,,,"%ips",,%downrate,%uprate,%downceil,%upceil,"KOMENTARZ"\n'
-end = '#END OF FILE'
+#end = '#END OF FILE'
 ```
 
 ## Tworzymy kolejnego hosta w LMS o nazwie np. LibreQoS (Konfiguracja --> Hosty)
