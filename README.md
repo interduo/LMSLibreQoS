@@ -36,3 +36,11 @@ begin = '#LMS customer queues file for LibreQoS - %date\n'
 class_up = '%assignmentid,%cid,%h,%class,,,"%ips",,%downrate,%uprate,%downceil,%upceil,"KOMENTARZ"\n'
 end = '#END OF FILE'
 ```
+
+## Tworzymy kolejnego hosta w LMS o nazwie np. LibreQoS (Konfiguracja --> Hosty)
+
+Jeśli mamy wartość zmiennej *reload_type* jako *exec* to wariantowo:
+a) rozbudowywujemy skrypt ze zmiennej reload_execcmd (np. /skrypt.sh %host ma spowodować uruchomienie plugins/LMSLibreQoS/make-and-send-libreqosconf.sh),
+b) edytujemy wartość zmiennej reload_execcmd jako /var/www/html/lms/plugins/LMSLibreQoS/make-and-send-libreqosconf.sh
+
+Po zmianie zobowiązań wybieramy Przeładowanie --> wybieramy hosta LibreQoS --> klikamy *Zapisz*
