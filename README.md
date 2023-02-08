@@ -37,8 +37,9 @@ class_up = '%assignmentid,%cid,%h,%class,,,"%ips",,%downrate,%uprate,%downceil,%
 #end = '#END OF FILE'
 ```
 
-## Tworzymy kolejnego hosta w LMS o nazwie np. LibreQoS (Konfiguracja --> Hosty)
+## Dodanie LibreQoS do listy przeładowań 
 
+Tworzymy kolejnego hosta w LMS o nazwie np. LibreQoS (Konfiguracja --> Hosty).
 Jeśli mamy wartość zmiennej *reload_type* jako *exec* to wariantowo:
 
 a) rozbudowywujemy skrypt ze zmiennej reload_execcmd
