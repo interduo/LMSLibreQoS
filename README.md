@@ -25,8 +25,8 @@ ssh-copy-id uzytkownik@libreqoshost
 ```
 [libreqos]
 script_file = /var/www/html/lms/plugins/LMSLibreQoS/ShapedDevices.csv
-script_file_day = /tmp/removemesomeday_1
-script_file_night = /tmp/removemesomeday_2
+script_file_day = /dev/null
+script_file_night = /dev/null
 script_permission = -1
 all_assignments = true
 assignment_per_node = true
